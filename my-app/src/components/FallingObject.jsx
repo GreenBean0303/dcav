@@ -14,11 +14,13 @@ const FallingObject = ({ type, positionX, onCatch }) => {
 
   // Check if object reaches the bottom
   useEffect(() => {
-    if (positionY > window.innerHeight - 100) {
-      onCatch(type);
+    if (positionY > 450) { // When object reaches bottom
+      if (type === "product") {
+        onCatch(type, positionX); // Pass object X position to check collision
+      }
     }
-  }, [positionY, type, onCatch]);
-
+  }, [positionY, type, positionX, onCatch]);
+  
   return (
     <div
       style={{
