@@ -5,44 +5,62 @@ import Hearts from "./Hearts";
 import windowsXP from "../assets/WindowsXP.png";
 
 const GameBoard = () => {
-  const [position, setPosition] = useState(window.innerWidth / 2);
+  const [position, setPosition] = useState(225); // Start in the middle of 600px
   const [fallingObjects, setFallingObjects] = useState([]);
-  const [droppedItems, setDroppedItems] = useState(0); // Track how many products are dropped
+  const [droppedItems, setDroppedItems] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setFallingObjects((prev) => [
         ...prev,
         {
-          id: Math.random(), // Assign a unique id to each object
+          id: Math.random().toString(36).substr(2, 9),
           type: Math.random() < 0.2 ? "virus" : Math.random() < 0.4 ? "scam" : "product",
           positionX: Math.random() * 550, // Keep objects within 600px width
         },
       ]);
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
   const handleCatch = (type, objectX, objectY, id) => {
-    const playerWidth = 150; // Player's width
-    const playerBottom = 500 - 10; // Player's bottom position (from GameBoard height - bottom padding)
+    const playerWidth = 150;
+    const playerHeight = 150;
+    const playerBottom = 500 - 10;
+    const playerTop = playerBottom - playerHeight;
     const playerLeft = position;
     const playerRight = playerLeft + playerWidth;
-    const objectBottom = objectY + 50; // Falling object's bottom position
-  
-    if (type === "product") {
-      // Check if the object is within the player's area
-      if (objectBottom >= playerBottom && objectX + 50 >= playerLeft && objectX <= playerRight) {
-        setFallingObjects((prev) => prev.filter(obj => obj.id !== id)); // Remove caught object
-      } else if (objectBottom > playerBottom) {
-        // If product hits the ground, increase dropped items
-        setDroppedItems((prev) => prev + 1);
-        setFallingObjects((prev) => prev.filter(obj => obj.id !== id)); // Remove missed object
+
+    const objectBottom = objectY + 50;
+    const objectTop = objectY;
+    const objectWidth = 50;
+
+    const isXOverlap = objectX + objectWidth >= playerLeft && objectX <= playerRight;
+    const isYOverlap = objectBottom >= playerTop && objectTop <= playerBottom;
+
+    setFallingObjects((prev) => {
+      if (!prev.find(obj => obj.id === id)) return prev;
+
+      if (type === "product" && isXOverlap && isYOverlap) {
+        console.log("✅ Product Caught!");
+        return prev.filter(obj => obj.id !== id);
       }
-    }
+
+      if (type === "product" && objectBottom >= 500) {
+        console.log("❌ Product Dropped!");
+        setDroppedItems((prevDropped) => Math.min(prevDropped + 1, 10));
+        return prev.filter(obj => obj.id !== id);
+      }
+
+      if (type === "virus" || type === "scam") {
+        console.log("⚠️ Virus/Scam ignored, removing...");
+        return prev.filter(obj => obj.id !== id);
+      }
+
+      return prev;
+    });
   };
-  
 
   return (
     <div
@@ -71,17 +89,14 @@ const GameBoard = () => {
         <FallingObject key={obj.id} type={obj.type} positionX={obj.positionX} onCatch={handleCatch} />
       ))}
 
-      {/* If player drops 10 products, they lose */}
       {droppedItems >= 10 && (
-        <h1
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            color: "red",
-          }}
-        >
+        <h1 style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          color: "red",
+        }}>
           You got kicked out of online shopping! 🛒❌
         </h1>
       )}

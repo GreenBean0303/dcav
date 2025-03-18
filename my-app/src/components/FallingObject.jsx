@@ -27,14 +27,19 @@ const FallingObject = ({ type, positionX, onCatch, id }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPositionY((prevY) => prevY + speed);
+      setPositionY((prevY) => {
+        if (prevY >= 500) return prevY; // Prevents infinite falling
+        return prevY + speed;
+      });
     }, 30);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [speed]);
 
+  // Ensure collision detection happens **ONLY ONCE per object**
   useEffect(() => {
-    if (positionY > 500) { // Object reaches the bottom
+    if (positionY >= 340 && positionY <= 490) { // ✅ Only check collisions when near player
+      console.log(`🚀 Object ${id} (${type}) is near the player at Y=${positionY}`);
       onCatch(type, positionX, positionY, id);
     }
   }, [positionY, type, positionX, id, onCatch]);
