@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Player from "./Player";
 import FallingObject from "./FallingObject";
 import Hearts from "./Hearts";
+import windowsXP from "../assets/WindowsXP.png";
 
 const GameBoard = () => {
   const [position, setPosition] = useState(window.innerWidth / 2);
@@ -35,8 +36,8 @@ const GameBoard = () => {
       style={{
         width: "100vw",
         height: "100vh",
-        backgroundImage: "url('/windows-xp-bg.jpg')",
-        backgroundSize: "cover",
+        backgroundImage: "url('/windowsXP.png')",
+    backgroundPosition: "center",
         overflow: "hidden",
         position: "relative",
       }}
