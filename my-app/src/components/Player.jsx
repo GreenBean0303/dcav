@@ -2,16 +2,17 @@ import React, { useEffect, useCallback } from "react";
 import playerImage from "../assets/player.png"; // If using `src/assets/`
 
 const Player = ({ position, setPosition }) => {
-  const handleKeyDown = useCallback(
-    (event) => {
-      if (event.key === "ArrowLeft" && position > 0) {
-        setPosition((prev) => prev - 20);
-      } else if (event.key === "ArrowRight" && position < window.innerWidth - 80) {
-        setPosition((prev) => prev + 20);
-      }
-    },
-    [position, setPosition]
-  );
+    const handleKeyDown = useCallback(
+        (event) => {
+          if (event.key === "ArrowLeft" && position > 0) {
+            setPosition((prev) => prev - 20);
+          } else if (event.key === "ArrowRight" && position < 520) { // 600px - Player width (80px)
+            setPosition((prev) => prev + 20);
+          }
+        },
+        [position, setPosition]
+      );
+      
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);

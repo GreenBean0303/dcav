@@ -16,11 +16,11 @@ const GameBoard = () => {
         {
           id: Math.random(),
           type: Math.random() < 0.2 ? "virus" : Math.random() < 0.4 ? "scam" : "product",
-          positionX: Math.random() * (window.innerWidth - 50),
+          positionX: Math.random() * 550, // Keep objects within 600px width (a bit smaller to fit)
         },
       ]);
     }, 1000);
-
+  
     return () => clearInterval(interval);
   }, []);
 
@@ -34,13 +34,20 @@ const GameBoard = () => {
   return (
     <div
   style={{
-    width: "100vw",
-    height: "100vh",
-    backgroundImage: `url(${windowsXP})`, // Use imported image
+    width: "600px", // Set the new playable area width
+    height: "500px", // Set the height
+    position: "absolute", 
+    top: "50%", 
+    left: "50%", 
+    transform: "translate(-50%, -50%)", // Centers it on the screen
+    backgroundImage: `url(${windowsXP})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
+    overflow: "hidden",
+    border: "2px solid black", // Optional: Helps visualize the area
   }}
 >
+
       <Hearts lives={lives} />
       <Player position={position} setPosition={setPosition} />
       {fallingObjects.map((obj) => (
