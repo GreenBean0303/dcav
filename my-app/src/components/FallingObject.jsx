@@ -1,43 +1,57 @@
 import React, { useState, useEffect } from "react";
+import appleImage from "../assets/apple.png";
+import tvImage from "../assets/tv.png";
+import virus1 from "../assets/ILOVEYOUvirus.png";
+import virus2 from "../assets/virus.png";
+import virus3 from "../assets/Youareanidiot.png";
+import scamImage from "../assets/pop-up.png";
 
-const FallingObject = ({ type, positionX, onCatch }) => {
+// Store images in arrays for random selection
+const virusImages = [virus1, virus2, virus3];
+const productImages = [appleImage, tvImage];
+const scamImages = [scamImage];
+
+const FallingObject = ({ type, positionX, onCatch, id }) => {
   const [positionY, setPositionY] = useState(0);
   const speed = type === "virus" ? 3 : 2; // Viruses fall slightly faster
+
+  // Select a random image **ONCE** and store it in state
+  const [objectImage] = useState(() => {
+    const imageMap = {
+      product: productImages,
+      virus: virusImages,
+      scam: scamImages,
+    };
+    return imageMap[type][Math.floor(Math.random() * imageMap[type].length)];
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPositionY((prevY) => prevY + speed);
-    }, 50);
+    }, 30);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Check if object reaches the bottom
   useEffect(() => {
-    if (positionY > 450) { // When object reaches bottom
-      if (type === "product") {
-        onCatch(type, positionX); // Pass object X position to check collision
-      }
+    if (positionY > 500) { // Object reaches the bottom
+      onCatch(type, positionX, positionY, id);
     }
-  }, [positionY, type, positionX, onCatch]);
-  
+  }, [positionY, type, positionX, id, onCatch]);
+
   return (
-    <div
+    <img
+      src={objectImage}
+      alt={type}
       style={{
         position: "absolute",
         top: `${positionY}px`,
         left: `${positionX}px`,
         width: "50px",
         height: "50px",
-        backgroundColor: type === "virus" ? "red" : "green",
-        borderRadius: "50%",
-        textAlign: "center",
-        lineHeight: "50px",
-        color: "white",
+        objectFit: "contain",
       }}
-    >
-      {type === "virus" ? "🦠" : type === "scam" ? "📢" : "📦"}
-    </div>
+    />
   );
 };
 

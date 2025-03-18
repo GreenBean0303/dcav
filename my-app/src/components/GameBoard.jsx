@@ -14,29 +14,31 @@ const GameBoard = () => {
       setFallingObjects((prev) => [
         ...prev,
         {
-          id: Math.random(),
+          id: Math.random(), // Assign a unique id to each object
           type: Math.random() < 0.2 ? "virus" : Math.random() < 0.4 ? "scam" : "product",
           positionX: Math.random() * 550, // Keep objects within 600px width
         },
       ]);
     }, 1000);
-
+  
     return () => clearInterval(interval);
   }, []);
 
-  const handleCatch = (type, objectX) => {
-    const playerWidth = 150; // Width of player (shopping cart)
-    const playerLeft = position; // Player's left side X position
-    const playerRight = playerLeft + playerWidth; // Player's right side X position
+  const handleCatch = (type, objectX, objectY, id) => {
+    const playerWidth = 150; // Player's width
+    const playerBottom = 500 - 10; // Player's bottom position (from GameBoard height - bottom padding)
+    const playerLeft = position;
+    const playerRight = playerLeft + playerWidth;
+    const objectBottom = objectY + 50; // Falling object's bottom position
   
     if (type === "product") {
-      // Check if the product falls within the player's catching range
-      if (objectX + 50 >= playerLeft && objectX <= playerRight) { // 50px = object size
-        // Caught the product, remove it
-        setFallingObjects((prev) => prev.filter(obj => obj.positionX !== objectX));
-      } else {
-        // If the product was missed, increase the dropped count
+      // Check if the object is within the player's area
+      if (objectBottom >= playerBottom && objectX + 50 >= playerLeft && objectX <= playerRight) {
+        setFallingObjects((prev) => prev.filter(obj => obj.id !== id)); // Remove caught object
+      } else if (objectBottom > playerBottom) {
+        // If product hits the ground, increase dropped items
         setDroppedItems((prev) => prev + 1);
+        setFallingObjects((prev) => prev.filter(obj => obj.id !== id)); // Remove missed object
       }
     }
   };
