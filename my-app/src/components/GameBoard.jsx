@@ -33,15 +33,14 @@ const GameBoard = () => {
 
   return (
     <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        backgroundImage: "url('/windowsXP.png')",
+  style={{
+    width: "100vw",
+    height: "100vh",
+    backgroundImage: `url(${windowsXP})`, // Use imported image
+    backgroundSize: "cover",
     backgroundPosition: "center",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
+  }}
+>
       <Hearts lives={lives} />
       <Player position={position} setPosition={setPosition} />
       {fallingObjects.map((obj) => (
