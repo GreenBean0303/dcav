@@ -6,47 +6,65 @@ import virus2 from "../assets/virus.png";
 import virus3 from "../assets/Youareanidiot.png";
 import scamImage from "../assets/pop-up.png";
 
-// Store images in arrays for random selection
 const virusImages = [virus1, virus2, virus3];
 const productImages = [appleImage, tvImage];
 const scamImages = [scamImage];
 
-const FallingObject = ({ type, positionX, onCatch, id }) => {
+const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition }) => {
   const [positionY, setPositionY] = useState(0);
-  const speed = type === "virus" ? 3 : 2; // Viruses fall slightly faster
+  const speed = type === "virus" ? 3 : 2;
+  const [caught, setCaught] = useState(false);
 
-  // Select a random image **ONCE** and store it in state
+  // Store a randomly chosen image **once** when the object is created
   const [objectImage] = useState(() => {
-    const imageMap = {
-      product: productImages,
-      virus: virusImages,
-      scam: scamImages,
-    };
-    return imageMap[type][Math.floor(Math.random() * imageMap[type].length)];
+    if (type === "virus") return virusImages[Math.floor(Math.random() * virusImages.length)];
+    if (type === "scam") return scamImages[0];
+    return productImages[Math.floor(Math.random() * productImages.length)];
   });
 
   useEffect(() => {
+    if (gameOver || caught) return;
+
     const interval = setInterval(() => {
       setPositionY((prevY) => {
-        if (prevY >= 500) return prevY; // Prevents infinite falling
+        if (prevY >= 500) {
+          if (type === "product") {
+            onCatch(type, positionX, prevY, id);
+          }
+          return prevY;
+        }
+
+        // Check if object is caught by the player
+        const playerWidth = 150;
+        const playerHeight = 150;
+        const playerBottom = 500;
+        const playerTop = playerBottom - playerHeight;
+        const playerLeft = playerPosition;
+        const playerRight = playerLeft + playerWidth;
+
+        const objectBottom = prevY + 50;
+        const objectTop = prevY;
+        const objectWidth = 50;
+
+        const isXOverlap = positionX + objectWidth >= playerLeft && positionX <= playerRight;
+        const isYOverlap = objectBottom >= playerTop && objectTop <= playerBottom;
+
+        if (isXOverlap && isYOverlap && !caught) {
+          setCaught(true);
+          setTimeout(() => onCatch(type, positionX, prevY, id), 0); // Ensures only one call per object
+          return 9999;
+        }
+
         return prevY + speed;
       });
     }, 30);
 
     return () => clearInterval(interval);
-  }, [speed]);
-
-  // Ensure collision detection happens **ONLY ONCE per object**
-  useEffect(() => {
-    if (positionY >= 340 && positionY <= 490) { // ✅ Only check collisions when near player
-      console.log(`🚀 Object ${id} (${type}) is near the player at Y=${positionY}`);
-      onCatch(type, positionX, positionY, id);
-    }
-  }, [positionY, type, positionX, id, onCatch]);
+  }, [speed, gameOver, caught, onCatch, type, positionX, id, playerPosition]);
 
   return (
     <img
-      src={objectImage}
+      src={objectImage} 
       alt={type}
       style={{
         position: "absolute",
@@ -55,6 +73,7 @@ const FallingObject = ({ type, positionX, onCatch, id }) => {
         width: "50px",
         height: "50px",
         objectFit: "contain",
+        display: caught || (positionY >= 500 && type === "product") ? "none" : "block",
       }}
     />
   );

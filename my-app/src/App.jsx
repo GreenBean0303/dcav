@@ -1,50 +1,53 @@
 import React, { useState } from "react";
 import GameBoard from "./components/GameBoard";
 import WindowsXP from "./assets/WindowsXP.png";
-import WarningImage from "./assets/WarningImage.png"
+import WarningImage from "./assets/WarningImage.png";
+import "./App.css"; // Import styles for glitch effects
 
 function App() {
-  // State to toggle between the start menu and the game
   const [gameStarted, setGameStarted] = useState(false);
+
   return (
     <div
-    style={{
-      backgroundImage: `url(${WindowsXP})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      height: "100vh",
-      width: "100vw",
-      position: "relative" // Enables layering for overlay
-    }}
+      className={`app-container ${gameStarted ? "" : "start-screen"}`}
+      style={{
+        backgroundImage: `url(${WindowsXP})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        height: "100vh",
+        width: "100vw",
+        position: "relative",
+      }}
     >
       {!gameStarted ? (
         <div
-        style={{
-          backgroundImage: `url(${WarningImage})`,
-          backgroundSize: "contain", // Ensures the image scales properly
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          width: "500px", // Match the warning image dimensions
-          height: "150px", // Adjust based on the image size
-          position: "absolute",
-          top: "50%", // Center vertically
-          left: "50%", // Center horizontally
-          transform: "translate(-50%, -50%)", // Perfect centering trick
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          padding: "20px"
-        }}
-        
+          style={{
+            backgroundImage: `url(${WarningImage})`,
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            width: "500px",
+            height: "150px",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            padding: "20px",
+          }}
         >
           <h1 style={{ color: "white", fontSize: "3em" }}>
             Welcome to the Shopping Game! 🛒
           </h1>
-          <p style={{color: 'green'}}>Avoid catching viruses and make sure to not drop too many items!</p>
+          <p style={{ color: "red", fontSize: "2em" }}>
+            Avoid catching viruses and make sure not to drop too many items!
+          </p>
           <button
-            onClick={() => setGameStarted(true)} // Start the game when clicked
+            onClick={() => setGameStarted(true)}
             style={{
               padding: "10px 20px",
               fontSize: "20px",
@@ -53,15 +56,14 @@ function App() {
               border: "none",
               backgroundColor: "#ffcc00",
               color: "black",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             Start Game
           </button>
         </div>
       ) : (
-        // Show the game board if the game has started
-        <GameBoard />
+        <GameBoard setGameStarted={setGameStarted} />
       )}
     </div>
   );
