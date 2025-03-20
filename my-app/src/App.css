@@ -1,38 +1,20 @@
-.App {
-  text-align: center;
+@keyframes glitch {
+  0% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+  20% { transform: translate(-2px, 2px); filter: hue-rotate(20deg); }
+  40% { transform: translate(2px, -2px); filter: hue-rotate(40deg); }
+  60% { transform: translate(-2px, -2px); filter: hue-rotate(60deg); }
+  80% { transform: translate(2px, 2px); filter: hue-rotate(80deg); }
+  100% { transform: translate(0, 0); filter: hue-rotate(100deg); }
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
+.glitch-1 { animation: glitch 0.1s infinite; }
+.glitch-2 { animation: glitch 0.15s infinite; }
+.glitch-3 { animation: glitch 0.2s infinite; }
+.glitch-4 { animation: glitch 0.25s infinite; }
+.glitch-5 { animation: glitch 0.3s infinite; }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.falling-object {
+  position: absolute;
+  width: 50px;
+  height: 50px;
 }
