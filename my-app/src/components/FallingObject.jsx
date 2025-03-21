@@ -14,6 +14,7 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
   const [positionY, setPositionY] = useState(0);
   const speed = type === "virus" ? 3 : 2;
   const [caught, setCaught] = useState(false);
+  const [triggerCatch, setTriggerCatch] = useState(false); // Flag to safely call onCatch later
 
   const [objectImage] = useState(() => {
     if (type === "virus") return virusImages[Math.floor(Math.random() * virusImages.length)];
@@ -21,6 +22,7 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
     return productImages[Math.floor(Math.random() * productImages.length)];
   });
 
+  // Collision check loop
   useEffect(() => {
     if (gameOver || caught) return;
 
@@ -28,20 +30,18 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
       setPositionY((prevY) => {
         if (prevY >= 500) {
           if (type === "product" && !caught) {
-            onCatch(type, positionX, prevY, id, false);
+            setTriggerCatch("miss"); // Product not caught
           }
           return prevY;
         }
 
-        // Hitbox settings
-        const playerVisualWidth = 150;    // Actual cart image width
-        const playerHitboxWidth = 80;     // Hitbox width (smaller than visual)
+        // Hitbox setup
+        const playerVisualWidth = 150;
+        const playerHitboxWidth = 80;
         const playerHitboxHeight = 80;
 
         const playerBottom = 500;
         const playerTop = playerBottom - playerHitboxHeight;
-
-        // Center hitbox inside the cart's visual width
         const playerLeft = playerPosition + (playerVisualWidth - playerHitboxWidth) / 2;
         const playerRight = playerLeft + playerHitboxWidth;
 
@@ -54,8 +54,8 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
 
         if (isXOverlap && isYOverlap && !caught) {
           setCaught(true);
-          setTimeout(() => onCatch(type, positionX, prevY, id, true), 0);
-          return 9999; // move object out of view
+          setTriggerCatch("caught"); // Catch!
+          return 9999; // Send object off screen
         }
 
         return prevY + speed;
@@ -63,7 +63,18 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
     }, 30);
 
     return () => clearInterval(interval);
-  }, [speed, gameOver, caught, onCatch, type, positionX, id, playerPosition]);
+  }, [speed, gameOver, caught, type, positionX, id, playerPosition]);
+
+  // Safe catch/miss handling
+  useEffect(() => {
+    if (triggerCatch === "caught") {
+      onCatch(type, positionX, positionY, id, true);
+      setTriggerCatch(false);
+    } else if (triggerCatch === "miss") {
+      onCatch(type, positionX, positionY, id, false);
+      setTriggerCatch(false);
+    }
+  }, [triggerCatch, onCatch, type, positionX, positionY, id]);
 
   return (
     <img

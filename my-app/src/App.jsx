@@ -18,13 +18,22 @@ function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [playerName, setPlayerName] = useState("");
   const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch leaderboard data when the component mounts
   useEffect(() => {
     fetch(LEADERBOARD_URL)
       .then((response) => response.json())
-      .then((data) => setLeaderboard(data))
-      .catch((error) => console.error("Error fetching leaderboard:", error));
+      .then((data) => {
+        setLeaderboard(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching leaderboard:", error);
+        setError("Failed to load leaderboard");
+        setLoading(false);
+      });
   }, []);
 
   // Ask for the player's name on first render or use saved name
@@ -45,11 +54,17 @@ function App() {
   // Submit score to the backend API
   const submitScore = async (name, score) => {
     try {
+      // Send the score to the backend API
       const response = await fetch(SUBMIT_SCORE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, score }),
       });
+
+      // Ensure we have a successful response before proceeding
+      if (!response.ok) {
+        throw new Error("Failed to submit score");
+      }
 
       const data = await response.json();
       console.log("Result sent:", data);
@@ -60,6 +75,7 @@ function App() {
       setLeaderboard(leaderboardData);
     } catch (error) {
       console.error("Error sending score:", error);
+      setError("Failed to submit score");
     }
   };
 
@@ -171,21 +187,35 @@ function App() {
       ) : (
         <GameBoard
           setGameStarted={setGameStarted}
-          submitScore={submitScore} // Use correct prop name
+          submitScore={submitScore} // Pass the submitScore function to GameBoard
           playerName={playerName}
         />
       )}
 
       {/* Leaderboard display */}
-      <div style={{ position: "absolute", bottom: "10px", left: "10px", color: "white" }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          left: "10px",
+          color: "white",
+          fontSize: "18px",
+        }}
+      >
         <h2>Leaderboard</h2>
-        <ul>
-          {leaderboard.map((entry, index) => (
-            <li key={index}>
-              {entry.name}: {entry.score} points
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <p>Loading leaderboard...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : (
+          <ul>
+            {leaderboard.map((entry, index) => (
+              <li key={index}>
+                {entry.name}: {entry.score} points
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
