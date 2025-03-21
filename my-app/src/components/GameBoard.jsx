@@ -6,7 +6,7 @@ import PauseMenu from "./PauseMenu";
 import "../App.css";
 import windowsXP from "../assets/WindowsXP.png";
 
-const GameBoard = ({ setGameStarted }) => {
+const GameBoard = ({ setGameStarted, playerName, submitScore }) => {  // Change submitscore to submitScore
   const [position, setPosition] = useState(225);
   const [fallingObjects, setFallingObjects] = useState([]);
   const [droppedItems, setDroppedItems] = useState(0);
@@ -15,7 +15,10 @@ const GameBoard = ({ setGameStarted }) => {
   const [paused, setPaused] = useState(false);
   const [gameOver, setGameOver] = useState(false);
 
+  // Pause toggle logic
   const togglePause = () => setPaused((prev) => !prev);
+
+  // Reset game state to restart
   const handleRestart = () => {
     setFallingObjects([]);
     setDroppedItems(0);
@@ -25,11 +28,13 @@ const GameBoard = ({ setGameStarted }) => {
     setGameOver(false);
   };
 
+  // Exit game and go back to main screen
   const handleExit = () => {
     setPaused(false);
     setGameStarted(false);
   };
 
+  // Start generating falling objects
   useEffect(() => {
     if (paused || gameOver) return;
 
@@ -48,6 +53,7 @@ const GameBoard = ({ setGameStarted }) => {
     return () => clearInterval(interval);
   }, [paused, gameOver]);
 
+  // Game over conditions based on dropped items or hearts
   useEffect(() => {
     if (droppedItems >= 10 || hearts <= 0) {
       setGameOver(true);
@@ -55,8 +61,14 @@ const GameBoard = ({ setGameStarted }) => {
     }
   }, [droppedItems, hearts, setGameStarted]);
 
-  // Scores, health and dropped items
+  // Submit score when game is over
+  useEffect(() => {
+    if (gameOver) {
+      submitScore(playerName, score);  // Make sure submitScore is called
+    }
+  }, [gameOver, playerName, score, submitScore]);
 
+  // Handle catching a falling object
   const handleCatch = (type, objectX, objectY, id, wasCaught) => {
     if (paused || gameOver) return;
 
@@ -64,34 +76,35 @@ const GameBoard = ({ setGameStarted }) => {
 
     if (type === "product") {
       if (wasCaught) {
-        setScore((prev) => prev + 5); 
+        setScore((prev) => prev + 5); // Increment score when product is caught
       } else {
-        setDroppedItems((prev) => prev + 1); 
+        setDroppedItems((prev) => prev + 1); // Increment dropped items counter
       }
     } else if ((type === "virus" || type === "scam") && wasCaught) {
-      setHearts((prev) => Math.max(prev - 1, 0));
+      setHearts((prev) => Math.max(prev - 1, 0)); // Lose a heart if virus/scam is caught
     }
   };
 
   return (
     <div className={`game-container ${gameOver ? "game-over" : ""}`} style={{
-        width: "600px",
-        height: "500px",
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        backgroundImage: `url("${windowsXP}")`,
-        backgroundSize: "cover",
-        border: "2px solid black",
-        overflow: "hidden",
-      }}>
+      width: "600px",
+      height: "500px",
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      backgroundImage: `url("${windowsXP}")`,
+      backgroundSize: "cover",
+      border: "2px solid black",
+      overflow: "hidden",
+    }}>
       <h2 style={{ position: "absolute", top: "10px", right: "10px", color: "white" }}>
         Score: {score} | Dropped: {droppedItems} / 10
       </h2>
       <Hearts lives={hearts} />
       <Player position={position} setPosition={setPosition} />
 
+      {/* Render falling objects */}
       {fallingObjects.map((obj) => (
         <FallingObject
           key={obj.id}
@@ -107,6 +120,7 @@ const GameBoard = ({ setGameStarted }) => {
         />
       ))}
 
+      {/* Pause button */}
       <button
         onClick={togglePause}
         style={{
@@ -124,8 +138,10 @@ const GameBoard = ({ setGameStarted }) => {
         {paused ? "Resume" : "Pause"}
       </button>
 
+      {/* Pause menu display */}
       {paused && <PauseMenu onResume={togglePause} onRestart={handleRestart} onExit={handleExit} />}
 
+      {/* Game over screen */}
       {gameOver && (
         <div className="game-over-screen" style={{
           position: "absolute",

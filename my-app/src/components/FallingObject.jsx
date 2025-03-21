@@ -28,17 +28,22 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
       setPositionY((prevY) => {
         if (prevY >= 500) {
           if (type === "product" && !caught) {
-            onCatch(type, positionX, prevY, id, false); 
+            onCatch(type, positionX, prevY, id, false);
           }
           return prevY;
         }
 
-        const playerWidth = 100;
-        const playerHeight = 100;
+        // Hitbox settings
+        const playerVisualWidth = 150;    // Actual cart image width
+        const playerHitboxWidth = 80;     // Hitbox width (smaller than visual)
+        const playerHitboxHeight = 80;
+
         const playerBottom = 500;
-        const playerTop = playerBottom - playerHeight;
-        const playerLeft = playerPosition;
-        const playerRight = playerLeft + playerWidth;
+        const playerTop = playerBottom - playerHitboxHeight;
+
+        // Center hitbox inside the cart's visual width
+        const playerLeft = playerPosition + (playerVisualWidth - playerHitboxWidth) / 2;
+        const playerRight = playerLeft + playerHitboxWidth;
 
         const objectBottom = prevY + 40;
         const objectTop = prevY;
@@ -50,7 +55,7 @@ const FallingObject = ({ type, positionX, onCatch, id, gameOver, playerPosition 
         if (isXOverlap && isYOverlap && !caught) {
           setCaught(true);
           setTimeout(() => onCatch(type, positionX, prevY, id, true), 0);
-          return 9999;
+          return 9999; // move object out of view
         }
 
         return prevY + speed;
