@@ -11,8 +11,8 @@ import scamImage from "./assets/pop-up.png";
 import "./App.css";
 
 // Server URL for leaderboard and submitting scores
-const LEADERBOARD_URL = "https://codedefenders.ita.voco.ee/api/leaderboard";
-const SUBMIT_SCORE_URL = "https://codedefenders.ita.voco.ee/api/submit-score";
+const LEADERBOARD_URL = "http://localhost:4000/api/leaderboard";
+const SUBMIT_SCORE_URL = "http://localhost:4000/api/submit-score";
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
@@ -21,20 +21,33 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch leaderboard data when the component mounts
+  // Updated useEffect with timeout to fetch leaderboard data
   useEffect(() => {
-    fetch(LEADERBOARD_URL)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort(); // Abort the fetch request after a timeout
+    }, 5000); // 5 seconds timeout
+
+    fetch(LEADERBOARD_URL, { signal: controller.signal })
       .then((response) => response.json())
       .then((data) => {
         setLeaderboard(data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching leaderboard:", error);
-        setError("Failed to load leaderboard");
+        if (error.name === "AbortError") {
+          setError("Request timed out");
+        } else {
+          console.error("Error fetching leaderboard:", error);
+          setError("Failed to load leaderboard");
+        }
         setLoading(false);
       });
-  }, []);
+
+    return () => {
+      clearTimeout(timeoutId); // Clean up timeout on component unmount
+    };
+  }, []); // This runs when the component mounts
 
   // Ask for player's name
   useEffect(() => {
@@ -92,7 +105,7 @@ function App() {
         height: "100vh",
         width: "100vw",
         position: "relative",
-        overflow: "hidden", // Vältida liigset kerimist
+        overflow: "hidden", // Prevent excessive scrolling
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -107,8 +120,8 @@ function App() {
             backgroundSize: "contain",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
-            width: "90%", // Väldi liiga suurt suurust
-            maxWidth: "500px", // Maksimum suurus
+            width: "90%",
+            maxWidth: "500px", // Maximum size
             height: "auto",
             padding: "20px",
             textAlign: "center",
