@@ -1,54 +1,50 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-
 
 const app = express();
 const PORT = 4000;
 
-// Use CORS to allow requests from any origin or specify your client URL
+// Allow requests from React app
 app.use(cors({
-  origin: "http://localhost:3000", // Allow your front-end URL
+  origin: "http://localhost:3000",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
 }));
 
-// Middleware to parse JSON
 app.use(express.json());
 
-// Proxy POST request to the real backend
-app.post("/api/submit-score", async (req, res) => {
-  try {
-    const response = await fetch("https://codedefenders.ita.voco.ee/api/submit-score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
+// 🧠 In-memory leaderboard (resets when server restarts)
+let leaderboard = [];
 
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    console.error("Error proxying submit-score:", error);
-    res.status(500).json({ error: "Failed to submit score" });
+// 🎯 Submit score
+app.post("/api/submit-score", (req, res) => {
+  const { name, score } = req.body;
+
+  if (!name || typeof score !== "number") {
+    return res.status(400).json({ error: "Invalid name or score" });
   }
-});
 
-// Proxy GET request to leaderboard
-app.get("/api/leaderboard", async (req, res) => {
-  try {
-    const response = await fetch("https://codedefenders.ita.voco.ee/api/leaderboard");
-    if (!response.ok) {
-      throw new Error("Failed to fetch leaderboard");
+  // Optional: check if player exists and update score if higher
+  const existing = leaderboard.find(player => player.name === name);
+  if (existing) {
+    if (score > existing.score) {
+      existing.score = score;
     }
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error("Error proxying leaderboard:", error);
-    res.status(500).json({ error: "Failed to fetch leaderboard" });
+  } else {
+    leaderboard.push({ name, score });
   }
+
+  console.log("Score submitted:", name, score);
+  res.status(201).json({ message: "Score added" });
 });
 
-// Start the server
+// 🏆 Get leaderboard
+app.get("/api/leaderboard", (req, res) => {
+  const sorted = [...leaderboard].sort((a, b) => b.score - a.score);
+  res.json(sorted);
+});
+
+// 🚀 Start server
 app.listen(PORT, () => {
-  console.log(`Proxy server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
