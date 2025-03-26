@@ -11,8 +11,8 @@ import scamImage from "./assets/pop-up.png";
 import "./App.css";
 
 // Server URL for leaderboard and submitting scores
-const LEADERBOARD_URL = "https://codedefenders.ita.voco.ee/api/leaderboard";
-const SUBMIT_SCORE_URL = "https://codedefenders.ita.voco.ee/api/submit-score";
+const LEADERBOARD_URL = `${process.env.REACT_APP_API_URL}/api/leaderboard`;
+const SUBMIT_SCORE_URL = `${process.env.REACT_APP_API_URL}/api/submit-score`;
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
@@ -21,12 +21,25 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch leaderboard data when the component mounts
+  // Fetch leaderboard data when the component mounts (with debugging logs)
   useEffect(() => {
+    console.log("Fetching leaderboard from:", LEADERBOARD_URL);
+
     fetch(LEADERBOARD_URL)
-      .then((response) => response.json())
-      .then((data) => {
-        setLeaderboard(data);
+      .then((response) => {
+        console.log("Response Status:", response.status);
+        console.log("Response Headers:", response.headers);
+        return response.text(); // Read response as text
+      })
+      .then((text) => {
+        console.log("Raw API Response:", text); // Log raw response
+        try {
+          const data = JSON.parse(text); // Try to parse JSON
+          setLeaderboard(data);
+        } catch (error) {
+          console.error("JSON Parsing Error:", error);
+          setError("Invalid JSON response from server");
+        }
         setLoading(false);
       })
       .catch((error) => {
@@ -54,14 +67,12 @@ function App() {
   // Submit score to the backend API
   const submitScore = async (name, score) => {
     try {
-      // Send the score to the backend API
       const response = await fetch(SUBMIT_SCORE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, score }),
       });
 
-      // Ensure we have a successful response before proceeding
       if (!response.ok) {
         throw new Error("Failed to submit score");
       }
@@ -119,51 +130,27 @@ function App() {
 
           <div style={{ display: "flex", gap: "20px", margin: "20px 0" }}>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={appleImage}
-                alt="Product"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={appleImage} alt="Product" style={{ width: "80px", height: "80px" }} />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={tvImage}
-                alt="Product"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={tvImage} alt="Product" style={{ width: "80px", height: "80px" }} />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={virus1}
-                alt="Virus"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={virus1} alt="Virus" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={scamImage}
-                alt="Scam"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={scamImage} alt="Scam" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={virus}
-                alt="Virus"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={virus} alt="Virus" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={Youareanidiot}
-                alt="Scam"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={Youareanidiot} alt="Scam" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
           </div>
@@ -185,23 +172,11 @@ function App() {
           </button>
         </div>
       ) : (
-        <GameBoard
-          setGameStarted={setGameStarted}
-          submitScore={submitScore} // Pass the submitScore function to GameBoard
-          playerName={playerName}
-        />
+        <GameBoard setGameStarted={setGameStarted} submitScore={submitScore} playerName={playerName} />
       )}
 
       {/* Leaderboard display */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          left: "10px",
-          color: "white",
-          fontSize: "18px",
-        }}
-      >
+      <div style={{ position: "absolute", bottom: "10px", left: "10px", color: "white", fontSize: "18px" }}>
         <h2>Leaderboard</h2>
         {loading ? (
           <p>Loading leaderboard...</p>
