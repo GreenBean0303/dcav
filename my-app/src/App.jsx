@@ -11,8 +11,8 @@ import scamImage from "./assets/pop-up.png";
 import "./App.css";
 
 // Server URL for leaderboard and submitting scores
-const LEADERBOARD_URL = `${process.env.REACT_APP_API_URL}/api/leaderboard`;
-const SUBMIT_SCORE_URL = `${process.env.REACT_APP_API_URL}/api/submit-score`;
+const LEADERBOARD_URL = "https://codedefenders.ita.voco.ee/api/leaderboard";
+const SUBMIT_SCORE_URL = "https://codedefenders.ita.voco.ee/api/submit-score";
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
@@ -21,25 +21,12 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch leaderboard data when the component mounts (with debugging logs)
+  // Fetch leaderboard data when the component mounts
   useEffect(() => {
-    console.log("Fetching leaderboard from:", LEADERBOARD_URL);
-
     fetch(LEADERBOARD_URL)
-      .then((response) => {
-        console.log("Response Status:", response.status);
-        console.log("Response Headers:", response.headers);
-        return response.text(); // Read response as text
-      })
-      .then((text) => {
-        console.log("Raw API Response:", text); // Log raw response
-        try {
-          const data = JSON.parse(text); // Try to parse JSON
-          setLeaderboard(data);
-        } catch (error) {
-          console.error("JSON Parsing Error:", error);
-          setError("Invalid JSON response from server");
-        }
+      .then((response) => response.json())
+      .then((data) => {
+        setLeaderboard(data);
         setLoading(false);
       })
       .catch((error) => {
@@ -49,30 +36,35 @@ function App() {
       });
   }, []);
 
-  // Ask for the player's name on first render or use saved name
+  // Ask for player's name
   useEffect(() => {
     const storedName = localStorage.getItem("playerName");
     if (storedName) {
       setPlayerName(storedName);
-    } else {
-      let name = prompt("Enter your name");
-      while (!name) {
-        name = prompt("Name is required. Please enter your name");
-      }
-      localStorage.setItem("playerName", name); // Save name in localStorage
-      setPlayerName(name);
     }
   }, []);
 
-  // Submit score to the backend API
+  const handleNameSubmit = () => {
+    if (playerName.trim()) {
+      localStorage.setItem("playerName", playerName);
+      setGameStarted(true);
+    } else {
+      alert("Please enter a valid name");
+    }
+  };
+
+  // Submit score to backend
   const submitScore = async (name, score) => {
     try {
       const response = await fetch(SUBMIT_SCORE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ name, score }),
       });
 
+      // Ensure we have a successful response before proceeding
       if (!response.ok) {
         throw new Error("Failed to submit score");
       }
@@ -85,7 +77,7 @@ function App() {
       const leaderboardData = await leaderboardResponse.json();
       setLeaderboard(leaderboardData);
     } catch (error) {
-      console.error("Error sending score:", error);
+      console.error("Error submitting score:", error);
       setError("Failed to submit score");
     }
   };
@@ -100,72 +92,111 @@ function App() {
         height: "100vh",
         width: "100vw",
         position: "relative",
+        overflow: "hidden", // Vältida liigset kerimist
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {!gameStarted ? (
         <div
+          className="start-popup"
           style={{
             backgroundImage: `url(${WarningImage})`,
             backgroundSize: "contain",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
-            width: "500px",
-            height: "350px",
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
+            width: "90%", // Väldi liiga suurt suurust
+            maxWidth: "500px", // Maksimum suurus
+            height: "auto",
             padding: "20px",
+            textAlign: "center",
           }}
         >
-          <h1 style={{ color: "white", fontSize: "3em" }}>DONT CATCH A VIRUS</h1>
-          <p style={{ color: "black", fontSize: "2em" }}>
+          <h1 style={{ fontSize: "2em", color: "white" }}>DONT CATCH A VIRUS</h1>
+          <p style={{ color: "black", fontSize: "1.2em" }}>
             Avoid catching viruses and scams and watch out for dropping too many products!
           </p>
 
           <div style={{ display: "flex", gap: "20px", margin: "20px 0" }}>
             <div style={{ textAlign: "center" }}>
-              <img src={appleImage} alt="Product" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={appleImage}
+                alt="Product"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img src={tvImage} alt="Product" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={tvImage}
+                alt="Product"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img src={virus1} alt="Virus" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={virus1}
+                alt="Virus"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img src={scamImage} alt="Scam" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={scamImage}
+                alt="Scam"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img src={virus} alt="Virus" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={virus}
+                alt="Virus"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img src={Youareanidiot} alt="Scam" style={{ width: "80px", height: "80px" }} />
+              <img
+                src={Youareanidiot}
+                alt="Scam"
+                style={{ width: "80px", height: "80px" }}
+              />
               <p>❌</p>
             </div>
           </div>
 
+          <input
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            placeholder="Enter your name"
+            style={{
+              padding: "10px",
+              fontSize: "16px",
+              marginTop: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+              width: "80%",
+            }}
+          />
           <button
-            onClick={() => setGameStarted(true)}
+            className="start-button"
+            onClick={handleNameSubmit}
             style={{
               padding: "10px 20px",
-              fontSize: "20px",
+              fontSize: "16px",
               cursor: "pointer",
               borderRadius: "5px",
               border: "none",
               backgroundColor: "#ffcc00",
               color: "black",
               fontWeight: "bold",
+              marginTop: "10px",
             }}
           >
             Start Game
@@ -176,16 +207,24 @@ function App() {
       )}
 
       {/* Leaderboard display */}
-      <div style={{ position: "absolute", bottom: "10px", left: "10px", color: "white", fontSize: "18px" }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10px",
+          left: "10px",
+          color: "white",
+          fontSize: "18px",
+        }}
+      >
         <h2>Leaderboard</h2>
         {loading ? (
           <p>Loading leaderboard...</p>
         ) : error ? (
           <p>{error}</p>
         ) : (
-          <ul>
+          <ul style={{ listStyle: "none", padding: 0 }}>
             {leaderboard.map((entry, index) => (
-              <li key={index}>
+              <li key={index} style={{ fontSize: "14px", margin: "2px 0" }}>
                 {entry.name}: {entry.score} points
               </li>
             ))}
