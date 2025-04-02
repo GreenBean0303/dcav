@@ -144,9 +144,10 @@ function App() {
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "2em", color: "white" }}>DONT CATCH A VIRUS</h1>
+          <h1 style={{ fontSize: "3em", color: "black" }}>DONT CATCH A VIRUS</h1>
           <p style={{ color: "black", fontSize: "1.2em" }}>
             Avoid catching viruses and scams and watch out for dropping too many products!
+            Use LEFT arrow and RIGHT arrow to move the character.
           </p>
 
           <div style={{ display: "flex", gap: "20px", margin: "20px 0" }}>
