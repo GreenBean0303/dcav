@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import GameBoard from "./components/GameBoard";
+import "./App.css";
 import WindowsXP from "./assets/WindowsXP.png";
 import WarningImage from "./assets/WarningImage.png";
 import virus1 from "./assets/ILOVEYOUvirus.png";
@@ -8,11 +9,20 @@ import Youareanidiot from "./assets/Youareanidiot.png";
 import appleImage from "./assets/apple.png";
 import tvImage from "./assets/tv.png";
 import scamImage from "./assets/pop-up.png";
-import "./App.css";
 
-// Server URL for leaderboard and submitting scores
-const LEADERBOARD_URL = "http://localhost:4000/api/leaderboard";
-const SUBMIT_SCORE_URL = "http://localhost:4000/api/submit-score";
+// Define URLs for leaderboard and score submission
+const LEADERBOARD_URL = "http://localhost:3001/leaderboard"; // Replace with actual URL
+const SUBMIT_SCORE_URL = "http://localhost:3001/submit-score"; // Replace with actual URL
+
+// Import assets
+/*import WindowsXP from "/static/media/WindowsXP.c0757fc15639d259a773.png";
+import WarningImage from "/static/media/pop-up.f3ca457b0a8afb444755.png";
+import virus1 from "/static/media/ILOVEYOUvirus.46d2e492aa125a818ded.png";
+import virus from "/static/media/virus.dcbaf472c6e77482d83e.png";
+import Youareanidiot from "/static/media/player.4e775f7a481d84399941.png";
+import appleImage from "/static/media/apple.0720c39fe39c0afa0956.png";
+import tvImage from "/static/media/tv.8f84fb63aa7ef0a65dff.png";*/
+
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
@@ -21,16 +31,22 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Updated useEffect with timeout to fetch leaderboard data
+  // Fetch leaderboard data
   useEffect(() => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      controller.abort(); // Abort the fetch request after a timeout
+      controller.abort();
     }, 5000); // 5 seconds timeout
 
     fetch(LEADERBOARD_URL, { signal: controller.signal })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch leaderboard");
+        }
+        return response.json();
+      })
       .then((data) => {
+        console.log("Leaderboard data fetched:", data);
         setLeaderboard(data);
         setLoading(false);
       })
@@ -45,11 +61,11 @@ function App() {
       });
 
     return () => {
-      clearTimeout(timeoutId); // Clean up timeout on component unmount
+      clearTimeout(timeoutId);
     };
-  }, []); // This runs when the component mounts
+  }, []);
 
-  // Ask for player's name
+  // Retrieve player's name from localStorage
   useEffect(() => {
     const storedName = localStorage.getItem("playerName");
     if (storedName) {
@@ -77,15 +93,16 @@ function App() {
         body: JSON.stringify({ name, score }),
       });
 
-      // Ensure we have a successful response before proceeding
       if (!response.ok) {
         throw new Error("Failed to submit score");
       }
 
       const data = await response.json();
-      console.log("Result sent:", data);
+        console.log("🔁 Backend response:", data); // Debug line
+        alert(`Backend says: ${data.message}`);
 
-      // Re-fetch the leaderboard after submitting the score
+
+      // Re-fetch leaderboard after submitting score
       const leaderboardResponse = await fetch(LEADERBOARD_URL);
       const leaderboardData = await leaderboardResponse.json();
       setLeaderboard(leaderboardData);
@@ -105,7 +122,7 @@ function App() {
         height: "100vh",
         width: "100vw",
         position: "relative",
-        overflow: "hidden", // Prevent excessive scrolling
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -121,7 +138,7 @@ function App() {
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
             width: "90%",
-            maxWidth: "500px", // Maximum size
+            maxWidth: "500px",
             height: "auto",
             padding: "20px",
             textAlign: "center",
@@ -134,51 +151,23 @@ function App() {
 
           <div style={{ display: "flex", gap: "20px", margin: "20px 0" }}>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={appleImage}
-                alt="Product"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={appleImage} alt="Product" style={{ width: "80px", height: "80px" }} />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={tvImage}
-                alt="Product"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={tvImage} alt="Product" style={{ width: "80px", height: "80px" }} />
               <p>✅</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={virus1}
-                alt="Virus"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={virus1} alt="Virus" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={scamImage}
-                alt="Scam"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={virus} alt="Virus" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <img
-                src={virus}
-                alt="Virus"
-                style={{ width: "80px", height: "80px" }}
-              />
-              <p>❌</p>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <img
-                src={Youareanidiot}
-                alt="Scam"
-                style={{ width: "80px", height: "80px" }}
-              />
+              <img src={Youareanidiot} alt="Scam" style={{ width: "80px", height: "80px" }} />
               <p>❌</p>
             </div>
           </div>
